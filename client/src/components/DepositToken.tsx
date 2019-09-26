@@ -45,21 +45,22 @@ const DepositToken = observer(({ step }: IDepositToken) => {
 
   return (
     <div className="container">
-      <div className="title">Approve token so it can be deposited</div>
+      <div className="content">
+        <div className="title">Approve token so it can be deposited</div>
 
-      <TextInput
-        label="NFT Address:"
-        onChange={e => (store.address = e.target.value)}
-        value={store.address}
-      />
+        <TextInput
+          label="NFT Address:"
+          onChange={e => (store.address = e.target.value)}
+          value={store.address}
+        />
 
-      <TextInput
-        label="Token ID:"
-        type="number"
-        onChange={e => (store.tokenId = Number(e.target.value))}
-        value={String(store.tokenId)}
-      />
-
+        <TextInput
+          label="Token ID:"
+          type="number"
+          onChange={e => (store.tokenId = Number(e.target.value))}
+          value={String(store.tokenId)}
+        />
+      </div>
       <div className="buttons">
         <Button
           onClick={Go(step)}
@@ -81,12 +82,20 @@ const DepositToken = observer(({ step }: IDepositToken) => {
           display: flex;
           flex-direction: row;
         }
-        .container {
-          display: flex;
+        .content {
           height: 45vh;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-start;
           align-items: center;
+          display: flex;
+        }
+        .container {
+          display: flex;
+          height: 55vh;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+          color: white;
         }
       `}</style>
     </div>

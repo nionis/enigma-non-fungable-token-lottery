@@ -26,7 +26,7 @@ const Home = observer(() => {
       </div>
       <div className="lotteries">
         {lotteries.length === 0 ? (
-          <h1>no lotteries found</h1>
+          <h1>no lotteries available</h1>
         ) : (
           lotteries.map(lottery => {
             return <Lottery key={lottery.id} store={lottery} />;
@@ -34,6 +34,14 @@ const Home = observer(() => {
         )}
       </div>
       <style jsx>{`
+        h1{
+          text-align: center;
+          justify-content: center;
+          width: 100vw;
+          align-items: center;
+          display: flex;
+          height: 58vh;
+        }
         .lotteries {
           flex-wrap: wrap;
           display: flex;

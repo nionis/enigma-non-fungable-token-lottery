@@ -4,8 +4,8 @@ import Button from "./Button";
 const Complete = () => {
   return (
     <div className="container">
-      <h1>complete</h1>
-      <Button onClick={() => Router.replace("/")}>Go to homepage</Button>
+      <h1>Done!</h1>
+      <Button onClick={() => Router.replace("/")}>Homepage</Button>
 
       <style jsx>{`
         .container {
@@ -14,6 +14,7 @@ const Complete = () => {
           flex-direction: column;
           justify-content: center;
           align-items: center;
+          color: white;
         }
         .title {
           font-size: 3vh;

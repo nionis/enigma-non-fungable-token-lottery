@@ -43,7 +43,7 @@ const Home = types
         })
       );
 
-      console.log({ lotteries });
+      console.log({ length, lotteries });
 
       self.lotteries.clear();
 

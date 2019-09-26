@@ -17,10 +17,11 @@ const ProgressCircle = ({ text, active, complete }: IProgress) => (
         border: ${!active ? "solid 2px #003e86" : " solid 2px #E72A9B"};
         width: 5.5vh;
         height: 5.5vh;
-        line-height: 5vh;
+        line-height: 5.5vh;
         text-align: center;
         justify-content: center;
         font-size: 3vh;
+        color: white;
       }
     `}</style>
   </div>

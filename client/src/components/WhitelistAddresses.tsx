@@ -48,21 +48,25 @@ const WhitelistAddresses = observer(({ step }: IWhitelistAddresses) => {
 
   return (
     <div className="container">
-      <div className="title">Add addresses to whitelist</div>
-      <div>(every new line in an address)</div>
+      <div className="content">
+        <div className="title">Add addresses to whitelist</div>
+        <div>(every new line in an address)</div>
+      </div>
       <div className="form">
         <textarea onChange={updateAddresses} value={store.addresses} />
-        <Button
-          onClick={Go(step)}
-          disabled={disabled}
-          loading={loading}
-          undertext={step.transaction.error}
-        >
-          Go
-        </Button>
-        <Button onClick={step.skip} disabled={loading}>
-          Skip
-        </Button>
+        <div className="buttons">
+          <Button
+            onClick={Go(step)}
+            disabled={disabled}
+            loading={loading}
+            undertext={step.transaction.error}
+          >
+            Go
+          </Button>
+          <Button onClick={step.skip} disabled={loading}>
+            Skip
+          </Button>
+        </div>
       </div>
 
       <style jsx>{`
@@ -71,10 +75,14 @@ const WhitelistAddresses = observer(({ step }: IWhitelistAddresses) => {
         }
         .form {
           display: flex;
-          height: 35vh;
+          height: 47vh;
           flex-direction: column;
           justify-content: space-between;
           align-items: center;
+        }
+        .buttons {
+          display: flex;
+          flex-direction: row;
         }
         textarea {
           width: 70vh;
@@ -83,12 +91,19 @@ const WhitelistAddresses = observer(({ step }: IWhitelistAddresses) => {
           margin-top: 2vh;
           border: ${store.error ? "1px solid red" : "none"};
         }
+        .content {
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          display: flex;
+        }
         .container {
           display: flex;
-          height: 45vh;
+          height: 55vh;
           flex-direction: column;
-          justify-content: center;
+          justify-content: space-between;
           align-items: center;
+          color: white;
         }
       `}</style>
     </div>

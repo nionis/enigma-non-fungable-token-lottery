@@ -49,27 +49,28 @@ const CreateLottery = observer(({ step }: ICreateLottery) => {
 
   return (
     <div className="container">
-      <div className="title">Create Lottery</div>
-      <TextInput
-        label="NFT Address:"
-        onChange={e => (store.address = e.target.value)}
-        value={store.address}
-      />
+      <div className="content">
+        <div className="title">Create Lottery</div>
+        <TextInput
+          label="NFT Address:"
+          onChange={e => (store.address = e.target.value)}
+          value={store.address}
+        />
 
-      <TextInput
-        label="Token ID:"
-        type="number"
-        onChange={e => (store.tokenId = Number(e.target.value))}
-        value={String(store.tokenId)}
-      />
+        <TextInput
+          label="Token ID:"
+          type="number"
+          onChange={e => (store.tokenId = Number(e.target.value))}
+          value={String(store.tokenId)}
+        />
 
-      <TextInput
-        label="Max Paticipants:"
-        type="number"
-        onChange={e => (store.maxParticipants = Number(e.target.value))}
-        value={String(store.maxParticipants)}
-      />
-
+        <TextInput
+          label="Max Paticipants:"
+          type="number"
+          onChange={e => (store.maxParticipants = Number(e.target.value))}
+          value={String(store.maxParticipants)}
+        />
+      </div>
       <Button
         onClick={Go(step)}
         disabled={disabled}
@@ -81,10 +82,18 @@ const CreateLottery = observer(({ step }: ICreateLottery) => {
       <style jsx>{`
         .container {
           display: flex;
+          height: 55vh;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+          color: white;
+        }
+        .content {
           height: 45vh;
           flex-direction: column;
           justify-content: center;
           align-items: center;
+          display: flex;
         }
         .title {
           font-size: 3vh;
