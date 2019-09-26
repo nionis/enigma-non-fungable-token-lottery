@@ -1,34 +1,39 @@
-import Web3 from "web3"
-import {
-  abi as NFTAbi,
-  bytecode as NFTBytecode
-} from "../../build/smart_contracts/NFT.json";
+import Web3 from "web3";
 
 const definitions = {
-  NFT: {
-    abi: NFTAbi,
-    bytecode: NFTBytecode
-  },
+  NFT: undefined,
+  Deposit: undefined
 };
 
-const getContract = (web3: Web3, name: keyof typeof definitions) => {
-  const contract = new web3.eth.contract(
-    definitions[name].abi,
-  );
-  contract.options.data = definitions[name].bytecode;
-
-  return contract;
-};
-
-const getContractAt = (
-  eth: any,
+const getContract = async (
+  web3: Web3,
   name: keyof typeof definitions,
-  address: string
+  {
+    networkId,
+    address
+  }: {
+    networkId: number;
+    address?: string;
+  }
 ) => {
-  const contract = getContract(eth, name)
-  contract.options.address = address;
+  const definition =
+    definitions[name] ||
+    (await import(`../../../../build/smart_contracts/${name}.json`).then(
+      d => d.default
+    ));
+
+  definitions[name] = definition;
+
+  if (!definition.networks[networkId]) {
+    throw Error("contract address not found in this network");
+  }
+
+  const contract = new web3.eth.Contract(
+    definition.abi,
+    address ? address : definition.networks[networkId].address
+  );
 
   return contract;
 };
 
-export { getContract, getContractAt, };
+export default getContract;

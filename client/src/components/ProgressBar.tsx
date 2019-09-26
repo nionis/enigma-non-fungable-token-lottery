@@ -1,21 +1,14 @@
-import { ReactChildren } from "react";
-import Button from "./Button";
-import Form from "./Form";
 import ProgressCircle from "./ProgressCircle";
 
 interface IProgressBar {
-  status1: string;
-  status2: string;
-  status3: string;
+  status: 1 | 2 | 3;
 }
 
-const ProgressBar = ({ status1, status2, status3 }: IProgressBar) => (
+const ProgressBar = ({ status }: IProgressBar) => (
   <div className="progress">
-    <ProgressCircle status={status1} number="1" />
-    <div className="progressBars" />
-    <ProgressCircle status={status2} number="2" />
-    <div className="progressBars" />
-    <ProgressCircle status={status3} number="3" />
+    <ProgressCircle text="1" active={status === 1} complete={status > 1} />
+    <ProgressCircle text="2" active={status === 2} complete={status > 2} />
+    <ProgressCircle text="3" active={status === 3} complete={status > 3} />
 
     <style jsx>{`
       .progress {

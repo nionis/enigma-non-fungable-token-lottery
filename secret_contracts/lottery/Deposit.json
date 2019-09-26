@@ -1,6 +1,58 @@
 [
   {
     "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "lotteries",
+    "outputs": [
+      {
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "name": "token_id",
+        "type": "uint256"
+      },
+      {
+        "name": "participants",
+        "type": "uint256"
+      },
+      {
+        "name": "max_participants",
+        "type": "uint256"
+      },
+      {
+        "name": "contract_addr",
+        "type": "address"
+      },
+      {
+        "name": "winner",
+        "type": "address"
+      },
+      {
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -16,11 +68,11 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "enigma",
+    "name": "isOwner",
     "outputs": [
       {
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -28,42 +80,75 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "name": "_enigma",
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "setSecretContract",
+    "name": "transferOwnership",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "lotteriesLength",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [
       {
-        "name": "token_addr",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "name": "token_id",
+        "type": "uint256"
+      },
+      {
+        "name": "max_participants",
+        "type": "uint256"
+      },
+      {
+        "name": "contract_addr",
         "type": "address"
       },
       {
         "name": "from",
         "type": "address"
-      },
-      {
-        "name": "token_id",
-        "type": "uint256"
       }
     ],
-    "name": "claim",
+    "name": "lotteryCreated",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -73,19 +158,33 @@
     "constant": false,
     "inputs": [
       {
-        "name": "token_addr",
-        "type": "address"
+        "name": "id",
+        "type": "uint256"
       },
       {
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "name": "token_id",
+        "name": "status",
         "type": "uint256"
       }
     ],
-    "name": "release",
+    "name": "userJoined",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "name": "winner",
+        "type": "address"
+      }
+    ],
+    "name": "winnerSelected",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

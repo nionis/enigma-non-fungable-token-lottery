@@ -1,37 +1,28 @@
+import { CSSProperties } from "react";
+import { Instance } from "mobx-state-tree";
 import Button from "./Button";
-import { CSSProperties } from "@material-ui/styles";
+import LotteryModel from "../models/Lottery";
 
-enum Status {
-  JOIN = "JOIN",
-  LOGIN = "LOGIN",
-  JOINED = "JOINED",
-  FULL = "FULL",
-  WON = "WON",
-  LOST = "LOST"
+type IButton = Parameters<typeof Button>[0];
+
+interface ILotteryButton extends IButton {
+  status: Instance<typeof LotteryModel>["status"];
 }
 
-interface IButton {
-  status: keyof typeof Status;
-  onClick?: any;
-}
-
-const getText = (status: IButton["status"]) => {
-  if (status === Status.JOIN) {
+const getText = (status: ILotteryButton["status"]) => {
+  if (status === "JOIN") {
     return "JOIN";
   }
-  if (status === Status.LOGIN) {
+  if (status === "LOGIN") {
     return "LOGIN";
   }
-  if (status === Status.JOINED) {
-    return "JOINED 👍";
+  if (status === "FULL") {
+    return "ROLL";
   }
-  if (status === Status.FULL) {
-    return "FULL";
-  }
-  if (status === Status.WON) {
+  if (status === "WON") {
     return "WON! 🎉";
   }
-  if (status === Status.LOST) {
+  if (status === "LOST") {
     return "LOST 😔";
   }
 
@@ -39,7 +30,7 @@ const getText = (status: IButton["status"]) => {
 };
 
 const getStyle = (disabled: boolean): CSSProperties => {
-  const backgroundColor = disabled ? "grey" : "#e72a9b"
+  const backgroundColor = disabled ? "grey" : "#e72a9b";
   const width = "12vh";
 
   return {
@@ -48,12 +39,24 @@ const getStyle = (disabled: boolean): CSSProperties => {
   };
 };
 
-const LotteryButton = ({ status, onClick }: IButton) => {
-  const shouldBeEnabled: string[] = [Status.JOIN, Status.LOGIN];
-  const disabled = !shouldBeEnabled.includes(status);
+const LotteryButton = ({
+  status,
+  onClick,
+  loading,
+  disabled,
+  undertext
+}: ILotteryButton) => {
+  const shouldBeEnabled: string[] = ["JOIN", "FULL"];
+  disabled = disabled || !shouldBeEnabled.includes(status);
 
   return (
-    <Button onClick={onClick} disabled={disabled} style={getStyle(disabled)}>
+    <Button
+      style={getStyle(disabled)}
+      onClick={onClick}
+      disabled={disabled}
+      loading={loading}
+      undertext={undertext}
+    >
       {getText(status)}
     </Button>
   );

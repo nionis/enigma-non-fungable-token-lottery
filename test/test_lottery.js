@@ -1,8 +1,8 @@
 const fs = require("fs");
 const Web3 = require("web3");
+const { Enigma, utils, eeConstants } = require("enigma-js/node");
 const DepositContract = artifacts.require("Deposit");
 const NFTContract = artifacts.require("NFT");
-const { Enigma, utils, eeConstants } = require("enigma-js/node");
 
 const provider = new Web3.providers.HttpProvider("http://localhost:9545");
 const web3 = new Web3(provider);
@@ -21,12 +21,14 @@ if (
 }
 const EnigmaTokenContract = require("../build/enigma_contracts/EnigmaToken.json");
 
+// promisified timeout
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 let enigma = null;
 
+// computes task and returns decrypted result
 const compute = async ({ fn, args, userAddr, contractAddr }) => {
   let task = await new Promise((resolve, reject) => {
     enigma
@@ -92,9 +94,12 @@ const decodeLotteryInfo = output => {
 
 contract("lottery", accounts => {
   const [owner, user1, user2] = accounts;
+  const tokenId = 1;
+
   let secretContractAddr = null;
   let enigmaAddr = EnigmaContract.networks["4447"].address;
   let token = null;
+  let deposit = null;
 
   before(async function() {
     // setup enigma
@@ -118,6 +123,8 @@ contract("lottery", accounts => {
     token = await NFTContract.at(NFTContract.address);
     await token.mint(owner, 1);
     await token.mint(owner, 2);
+
+    deposit = await DepositContract.at(DepositContract.address);
   });
 
   // NOTE: helps with race-condition causing tests to fail
@@ -138,12 +145,8 @@ contract("lottery", accounts => {
 
   it("add to whitelist", async () => {
     await compute({
-      fn: "add_to_whitelist(address[], address, uint8[])",
-      args: [
-        [[user1, user2], "address[]"],
-        [owner, "address"],
-        [sig, "uint8[]"]
-      ],
+      fn: "add_to_whitelist(address[], address)",
+      args: [[[user1, user2], "address[]"], [owner, "address"]],
       userAddr: owner,
       contractAddr: secretContractAddr
     });
@@ -159,9 +162,7 @@ contract("lottery", accounts => {
   });
 
   it("create lottery #1", async () => {
-    const tokenId = 1;
-
-    await token.approve(DepositContract.address, tokenId);
+    await token.approve(deposit.address, tokenId);
 
     await compute({
       fn: "create_lottery(address, uint256, uint256, address)",
@@ -176,16 +177,21 @@ contract("lottery", accounts => {
     });
 
     const ownerOfToken = await token.ownerOf(tokenId);
-    expect(ownerOfToken).to.equal(DepositContract.address);
+    expect(ownerOfToken).to.equal(deposit.address);
 
-    const result = await compute({
+    const secretLength = await compute({
       fn: "get_lotteries_size()",
       args: "",
       userAddr: owner,
       contractAddr: secretContractAddr
-    });
+    }).then(res => rawUint256ToStr(res.decryptedOutput));
 
-    expect(parseInt(result.decryptedOutput, 16)).to.equal(1);
+    const smartLength = await deposit.lotteriesLength
+      .call()
+      .then(res => res.toString());
+
+    expect(secretLength).to.equal("1");
+    expect(smartLength).to.equal("1");
   });
 
   it("join lottery #1 by users", async () => {
@@ -216,6 +222,8 @@ contract("lottery", accounts => {
   });
 
   it("roll lottery #1", async () => {
+    const participants = [user1, user2];
+
     const result = await compute({
       fn: "roll(uint256)",
       args: [[1, "uint256"]],
@@ -223,6 +231,9 @@ contract("lottery", accounts => {
       contractAddr: secretContractAddr
     }).then(res => rawAddrToStr(res.decryptedOutput));
 
-    expect([user1, user2]).to.include(result);
+    const ownerOfToken = await token.ownerOf(tokenId);
+
+    expect(participants).to.include(result);
+    expect(participants).to.include(ownerOfToken);
   });
 });

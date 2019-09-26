@@ -1,3 +1,8 @@
+/*
+  # Storage
+  We do not store all state on a single HashMap, instead we store every Lottery seperately.
+  This is so we can save gas costs, and avoid unnecessary serializations / deserializations.
+*/
 #![no_std]
 #![allow(unused_attributes)]
 
@@ -14,14 +19,14 @@ use rustc_hex::ToHex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-// constant variable
+// constant variables
 static MAX_PARTICIPANTS: u16 = 1000;
 
 // private state keys
-static OWNERSHIP: &str = "ownership";
-static WHITELIST: &str = "whitelist";
-static LOTTERIES: &str = "lotteries";
-static LOTTERY: &str = "lottery";
+static OWNERSHIP: &str = "OWNERSHIP";
+static WHITELIST: &str = "WHITELIST";
+static LOTTERIES: &str = "LOTTERIES";
+static LOTTERY: &str = "LOTTERY_"; // dynamically generated afterwards "LOTTERY_<ID>"
 
 // owner
 #[derive(Serialize, Deserialize)]
@@ -39,7 +44,7 @@ pub struct Whitelist(HashSet<H160>);
 pub struct Lotteries(U256);
 
 // lottery status enum
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 enum LotteryStatus {
   JOINING = 0,
   READY = 1,
@@ -82,13 +87,19 @@ pub trait ContractInterface {
   fn roll(lottery_num: U256) -> H160;
 }
 
-// dynamically create lottery state key
-// to be able to scale due to serialization / deserialization
+// returns a Lottery state key, ex: "LOTTERY_1"
 fn create_lottery_key(lottery_num: U256) -> String {
   let mut key = String::from(LOTTERY);
   key.push_str(&lottery_num.to_string());
 
   return key;
+}
+
+// add prefix "0x" to address string
+fn h160_to_string(address: H160) -> String {
+  let addr_str: String = address.to_hex();
+
+  return [String::from("0x"), addr_str].concat();
 }
 
 // TODO: this may need improvement
@@ -97,13 +108,6 @@ fn random_range(my_max: u16) -> u16 {
   let system_max: u8 = u8::max_value();
 
   return (my_max * (entropy as u16)) / (system_max as u16);
-}
-
-// add prefix "0x" to address string
-fn h160_to_string(address: H160) -> String {
-  let addr_str: String = address.to_hex();
-
-  return [String::from("0x"), addr_str].concat();
 }
 
 // secret fns
@@ -135,6 +139,14 @@ impl Contract {
       None => panic!("lottery does not exist"),
     }
   }
+
+  // TODO: needs security check, see: https://forum.enigma.co/t/enigmasimulation/1070/16?u=nioni
+  // thus not used
+  // fn is_whitelisted(address: H160) -> bool {
+  //   let mut whitelist = Self::get_whitelist();
+
+  //   return whitelist.contains(&address);
+  // }
 }
 
 // public fns
@@ -174,11 +186,6 @@ impl ContractInterface for Contract {
     owner_addr: H160,
   ) -> U256 {
     let ownership = &Self::get_ownership();
-
-    // claim token
-    let deposit = EthContract::new(&h160_to_string(ownership.deposit_addr));
-    deposit.claim(contract_addr, owner_addr, token_id);
-
     let lotteries = Self::get_lotteries();
 
     // make new id
@@ -194,6 +201,16 @@ impl ContractInterface for Contract {
       status: LotteryStatus::JOINING,
     };
 
+    // update Deposit & claim
+    let deposit = EthContract::new(&h160_to_string(ownership.deposit_addr));
+    deposit.lotteryCreated(
+      id,
+      token_id,
+      max_participants,
+      contract_addr,
+      owner_addr
+    );
+
     write_state!(LOTTERIES => id, &create_lottery_key(id) => lottery);
 
     return lotteries;
@@ -206,6 +223,7 @@ impl ContractInterface for Contract {
 
   #[no_mangle]
   fn join_lottery(lottery_num: U256, address: H160) -> () {
+    let ownership = &Self::get_ownership();
     let lottery_key = &create_lottery_key(lottery_num);
     let mut lottery = Self::get_lottery(lottery_key);
     let max_participants = U256::as_usize(&lottery.max_participants);
@@ -229,6 +247,10 @@ impl ContractInterface for Contract {
     if lottery.participants.len() >= max_participants {
       lottery.status = LotteryStatus::READY;
     }
+
+    // update Deposit
+    let deposit = EthContract::new(&h160_to_string(ownership.deposit_addr));
+    deposit.userJoined(lottery.id, U256::from(lottery.status as usize));
 
     write_state!(lottery_key => lottery);
   }
@@ -263,11 +285,11 @@ impl ContractInterface for Contract {
     let index = random_range(lottery.participants.len() as u16);
     let winner = lottery.participants[index as usize];
 
-    // release token
-    let deposit = EthContract::new(&h160_to_string(ownership.deposit_addr));
-    deposit.release(lottery.contract_addr, winner, lottery.token_id);
-
     lottery.status = LotteryStatus::COMPLETE;
+
+    // update Deposit & release
+    let deposit = EthContract::new(&h160_to_string(ownership.deposit_addr));
+    deposit.winnerSelected(lottery.id, winner);
 
     write_state!(lottery_key => lottery);
 

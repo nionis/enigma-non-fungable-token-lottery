@@ -1,21 +1,18 @@
-import { when } from "mobx"
-import { types } from "mobx-state-tree"
-import { Enigma } from 'enigma-js';
-import web3Store from "../stores/web3"
-import {
-  networks as EnigmaSimulationNetworks
-} from "../build/enigma_contracts/EnigmaSimulation.json"
-import {
-  networks as EnigmaTokenNetworks
-} from "../build/enigma_contracts/EnigmaToken.json"
+/*
+  A store to initialize enigma.
+*/
+import { types, flow } from "mobx-state-tree";
+import web3Store from "../stores/web3";
+import { isSSR } from "../utils";
+import * as env from "../env";
 
-const EnigmaModel = types.model("Enigma", {
-  initialized: false,
-}).actions(self => ({
-  setInitialized(initialized: boolean) {
-    self.initialized = initialized;
-  }
-}))
+const Model = types
+  .model("Enigma", {
+    isInstalled: types.maybeNull(types.boolean),
+    enigmaAddress: types.maybeNull(types.string),
+    enigmaTokenAddress: types.maybeNull(types.string),
+    enigmaContractAddress: types.maybeNull(types.string)
+  })
   .actions(self => {
     let enigma: any | undefined;
 
@@ -34,29 +31,55 @@ const EnigmaModel = types.model("Enigma", {
         enigma = _enigma;
       }
     };
-  }).actions(self => {
-    when(() => web3Store.isLoggedIn && web3Store.networkId !== null, async () => {
+  })
+  .actions(self => ({
+    init: flow(function*() {
+      if (isSSR) return;
+      if (!web3Store.isLoggedIn) return;
       const web3 = web3Store.getWeb3();
-      const networkId = String(web3Store.networkId);
+
+      // dynamically load enigma-js and contract definitions
+      const [Enigma, EnigmaContract, EnigmaTokenContract] = (yield Promise.all([
+        import("enigma-js").then(d => d.Enigma),
+        import("../../../build/enigma_contracts/EnigmaSimulation.json").then(
+          d => d.default
+        ),
+        import("../../../build/enigma_contracts/EnigmaToken.json").then(
+          d => d.default
+        )
+      ])) as any[];
+
+      if (
+        !EnigmaContract.networks[web3Store.networkId] ||
+        !EnigmaTokenContract.networks[web3Store.networkId]
+      ) {
+        throw Error("contract address not found in this network");
+      }
+
+      self.enigmaAddress = EnigmaContract.networks[web3Store.networkId].address;
+      self.enigmaTokenAddress =
+        EnigmaTokenContract.networks[web3Store.networkId].address;
+      self.enigmaContractAddress = env.enigmaContractAddress;
 
       const enigma = new Enigma(
         web3,
-        EnigmaSimulationNetworks[networkId].address,
-        EnigmaTokenNetworks[networkId].address,
-        'http://localhost:3346',
+        self.enigmaAddress,
+        self.enigmaTokenAddress,
+        env.enigmaUrl,
         {
           gas: 4712388,
           gasPrice: 100000000000,
-          from: web3Store.account,
-        },
+          from: web3Store.account
+        }
       );
+
       enigma.admin();
 
       self.setEnigma(enigma);
-      self.setInitialized(true);
+
+      self.isInstalled = true;
+      console.log("Enigma Initialized");
     })
+  }));
 
-    return {}
-  })
-
-export default EnigmaModel
+export default Model;

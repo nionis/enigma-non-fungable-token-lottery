@@ -1,48 +1,98 @@
-import { ReactChildren } from "react";
+import { observer } from "mobx-react";
+import { types, unprotect, Instance } from "mobx-state-tree";
 import Button from "./Button";
+import Step from "../models/Step";
+import web3Store from "../stores/web3";
+import enigmaStore from "../stores/enigma";
+import EnigmaTransaction from "../models/EnigmaTransaction";
 
-// interface ILottery {
-//   title: string;
-//   tokenId: any;
-//   //SHould tokenid be string or num?
-//   participants: any;
-// }
+interface IWhitelistAddresses {
+  step: Instance<typeof Step>;
+}
 
-const WhitelistAddresses = ({  }: any) => (
-  <div className="container">
-    <div className="title">Add addresses to whitelist</div>
-    <div>(every new line in an address)</div>
-    <div className="form">
-      <textarea />
-      <Button>Go</Button>
+const store = types
+  .model("WhitelistAddresses", {
+    error: false,
+    addresses: types.maybe(types.string)
+  })
+  .create();
+unprotect(store);
+
+const Go = (step: IWhitelistAddresses["step"]) => async () => {
+  const enigma = enigmaStore.getEnigma();
+  const addresses = store.addresses.split("\n");
+  const transaction = step.transaction as Instance<typeof EnigmaTransaction>;
+
+  transaction.run(enigma, {
+    fn: "add_to_whitelist(address[], address)",
+    args: [[addresses, "address[]"], [web3Store.account, "address"]],
+    userAddr: web3Store.account,
+    contractAddr: enigmaStore.enigmaContractAddress
+  });
+};
+
+const updateAddresses = e => {
+  const web3 = web3Store.getWeb3();
+  const value: string = e.target.value || "";
+  const addresses = value.split("\n");
+  const isOk = addresses.every(address => web3.utils.isAddress(address));
+
+  store.error = !isOk;
+  store.addresses = value;
+};
+
+const WhitelistAddresses = observer(({ step }: IWhitelistAddresses) => {
+  const loading = step.transaction.status === "PENDING";
+  const disabled =
+    !enigmaStore.isInstalled || loading || store.error || !store.addresses;
+
+  return (
+    <div className="container">
+      <div className="title">Add addresses to whitelist</div>
+      <div>(every new line in an address)</div>
+      <div className="form">
+        <textarea onChange={updateAddresses} value={store.addresses} />
+        <Button
+          onClick={Go(step)}
+          disabled={disabled}
+          loading={loading}
+          undertext={step.transaction.error}
+        >
+          Go
+        </Button>
+        <Button onClick={step.skip} disabled={loading}>
+          Skip
+        </Button>
+      </div>
+
+      <style jsx>{`
+        .title {
+          font-size: 3vh;
+        }
+        .form {
+          display: flex;
+          height: 35vh;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+        }
+        textarea {
+          width: 70vh;
+          height: 25vh;
+          border-radius: 15px;
+          margin-top: 2vh;
+          border: ${store.error ? "1px solid red" : "none"};
+        }
+        .container {
+          display: flex;
+          height: 45vh;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+      `}</style>
     </div>
-
-    <style jsx>{`
-      .title {
-        font-size: 3vh;
-      }
-      .form {
-        display: flex;
-        height: 35vh;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-      }
-      textarea {
-        width: 70vh;
-        height: 25vh;
-        border-radius: 15px;
-        margin-top: 2vh;
-      }
-      .container {
-        display: flex;
-        height: 45vh;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-    `}</style>
-  </div>
-);
+  );
+});
 
 export default WhitelistAddresses;

@@ -1,6 +1,7 @@
 import { types, flow } from "mobx-state-tree";
+import Web3 from "web3";
 import getWeb3 from "./getWeb3";
-import { getContract, getContractAt } from "./getContract";
+import getContract from "./getContract";
 import { isSSR } from "../../utils";
 
 const Model = types
@@ -34,7 +35,7 @@ const Model = types
     }
   }))
   .actions(self => {
-    let web3: any | undefined;
+    let web3: Web3 | undefined;
 
     return {
       _getWeb3() {
@@ -53,7 +54,7 @@ const Model = types
     };
   })
   .actions(self => ({
-    sync: flow(function* () {
+    sync: flow(function*() {
       if (isSSR) {
         return;
       }
@@ -75,21 +76,19 @@ const Model = types
       self.setWeb3(web3);
 
       const accounts = (yield web3.eth.getAccounts()) || [];
-      self.account = accounts[0] || null;
+      const networkId = yield web3.eth.net.getId();
 
-      self.networkId = yield web3.eth.net.getId();
+      self.account = accounts[0] || null;
+      self.networkId = networkId;
     }),
 
-    getContract(name: Parameters<typeof getContract>["1"]) {
+    getContract(name: Parameters<typeof getContract>["1"], address?: string) {
       const web3 = self.getWeb3();
 
-      return getContract(web3, name);
-    },
-
-    getContractAt(name: Parameters<typeof getContract>["1"], address: string) {
-      const web3 = self.getWeb3();
-
-      return getContractAt(web3, name, address);
+      return getContract(web3, name, {
+        networkId: self.networkId,
+        address
+      });
     }
   }));
 

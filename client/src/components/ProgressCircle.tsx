@@ -1,26 +1,20 @@
-import { ReactChildren } from "react";
 import SvgIcon from "./SvgIcon";
 
 interface IProgress {
-  status: string;
-  number: string;
+  text: string;
+  active: boolean;
+  complete: boolean;
 }
 
-const ProgressCircle = ({ status, number }: IProgress) => (
+const ProgressCircle = ({ text, active, complete }: IProgress) => (
   <div className="container">
-    {status === "completed" ? (
-      <SvgIcon clickable={false} icon="done" />
-    ) : (
-      number
-    )}
+    {complete ? <SvgIcon clickable={false} icon="done" /> : text}
 
     <style jsx>{`
       .container {
-        background-color: ${status === "completed" ? "#E72A9B" : "#003e86"};
+        background-color: ${active ? "#E72A9B" : "#003e86"};
         border-radius: 50%;
-        border: ${status === "inactive"
-          ? "solid 2px #003e86"
-          : " solid 2px #E72A9B"};
+        border: ${!active ? "solid 2px #003e86" : " solid 2px #E72A9B"};
         width: 5.5vh;
         height: 5.5vh;
         line-height: 5vh;

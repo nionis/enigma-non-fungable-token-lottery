@@ -1,8 +1,6 @@
 {
   "name": "enigma-non-fungable-token-lottery-client",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "dev": "next",
     "build": "next build",
@@ -26,6 +24,8 @@
   "devDependencies": {
     "@types/node": "^12.7.1",
     "@types/react": "^16.8.25",
+    "@types/web3": "^1.0.19",
+    "@next/bundle-analyzer": "^9.0.5",
     "typescript": "^3.5.3"
   }
 }
