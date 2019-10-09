@@ -120,7 +120,7 @@ module.exports = async function(deployer, network, accounts) {
   enigma.admin();
 
   // Deploy your Smart and Secret contracts below this point:
-  await deployer.deploy(NFT).then(function() {
+  await deployer.deploy(NFT, "CryptoKitties", "CK").then(function() {
     console.log(
       `Smart Contract "NFT.Sol" has been deployed at ETH address: ${NFT.address}`
     );

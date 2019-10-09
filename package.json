@@ -7,7 +7,9 @@
     "dotenv": "^8.0.0",
     "enigma-js": "^0.0.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "truffle": "^5.0.39"
+  },
   "author": "",
   "license": "ISC"
 }
