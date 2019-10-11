@@ -3,6 +3,7 @@ import { types, unprotect, Instance } from "mobx-state-tree";
 import Button from "./Button";
 import TextInput from "./TextInput";
 import Step from "../models/Step";
+import homeStore from "../stores/home";
 import web3Store from "../stores/web3";
 import enigmaStore from "../stores/enigma";
 import EnigmaTransaction from "../models/EnigmaTransaction";
@@ -25,7 +26,7 @@ const Go = (step: ICreateLottery["step"]) => async () => {
   const enigma = enigmaStore.getEnigma();
   const transaction = step.transaction as Instance<typeof EnigmaTransaction>;
 
-  transaction.run(enigma, {
+  return transaction.run(enigma, {
     fn: "create_lottery(address, uint256, uint256, address)",
     args: [
       [store.address, "address"],
@@ -72,7 +73,7 @@ const CreateLottery = observer(({ step }: ICreateLottery) => {
         />
       </div>
       <Button
-        onClick={Go(step)}
+        onClick={() => Go(step)().then(() => homeStore.getLotteries())}
         disabled={disabled}
         loading={loading}
         undertext={step.transaction.error}

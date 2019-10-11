@@ -1,10 +1,8 @@
 import { when } from "mobx";
 import { observer } from "mobx-react";
 import web3Store from "./stores/web3";
-import HomeModel from "./models/Home";
+import store from "./stores/home";
 import Lottery from "./components/Lottery";
-
-const store = HomeModel.create();
 
 when(
   () => web3Store.isLoggedIn,
