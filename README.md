@@ -1,5 +1,16 @@
 # Enigma - Non Fungable Token Lottery
 
+## Using the scripts
+
+This project comes with a few handy scripts to help you create ERC721 contracts and mint tokens.
+
+* Create an ERC721 contract:
+  `npx truffle exec ./scripts/createERC721.js <name> <symbol>`
+  > will printout the address of the contract
+
+* Mint a token
+  `npx truffle exec ./scripts/mintToken.js <address> <tokenId>`
+
 ## Stack
 
 * next-js
