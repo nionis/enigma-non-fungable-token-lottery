@@ -1,5 +1,15 @@
 # Enigma - Non Fungable Token Lottery
 
+## About
+
+[Enigma](https://enigma.co/) is a secure computation protocol, where “secret nodes” in our network perform computations over encrypted data. Enigma brings privacy to any kind of computation - not just transactions - helping to improve the adoption and usability of decentralized technologies.
+
+This application uses enigma's secret contracts and ethereum's smart contracts to create a private [NFT](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-721.md) lottery.
+
+Key Features:
+* client enables the contract owner can encrypt and send a list of 100 whitelisted Ethereum addresses
+* client enables users encrypt and submit their addresses to the secret contract
+
 ## Using the scripts
 
 This project comes with a few handy scripts to help you create ERC721 contracts and mint tokens.
