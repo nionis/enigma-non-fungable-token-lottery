@@ -9,6 +9,7 @@ This application uses enigma's secret contracts and ethereum's smart contracts t
 Key Features:
 * client enables the contract owner can encrypt and send a list of 100 whitelisted Ethereum addresses
 * client enables users encrypt and submit their addresses to the secret contract
+* winner receives his token automatically
 
 ## Using the scripts
 
