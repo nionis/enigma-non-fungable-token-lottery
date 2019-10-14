@@ -25,7 +25,7 @@ const Button = ({
           <Loading />
         </div>
       ) : (
-        <div style={{ fontSize: "calc(12px + 0.4vw)" }}>{children}</div>
+        <div>{children}</div>
       )}
     </button>
     {undertext ? <div className="undertext">{undertext}</div> : null}
