@@ -12,7 +12,6 @@ interface IDepositToken {
 
 const store = types
   .model("DepositToken", {
-    error: false,
     address: "",
     tokenId: types.maybe(types.number)
   })
@@ -24,13 +23,7 @@ const Go = (step: IDepositToken["step"]) => async () => {
   const nftContract = await web3Store.getContract("NFT", store.address);
   const transaction = step.transaction as Instance<typeof Transaction>;
 
-  console.log(web3Store.account, store.tokenId);
-
-  // await nftContract.methods.mint(web3Store.account, store.tokenId).send({
-  //   from: web3Store.account
-  // });
-
-  transaction.run(() => {
+  return transaction.run(() => {
     return nftContract.methods
       .approve(deposit.options.address, store.tokenId)
       .send({
@@ -41,61 +34,78 @@ const Go = (step: IDepositToken["step"]) => async () => {
 
 const DepositToken = observer(({ step }: IDepositToken) => {
   const loading = step.transaction.status === "PENDING";
-  const disabled = loading || store.error || !store.address || !store.tokenId;
+  const disabled = loading || !store.address || !store.tokenId;
+  const errorMsg = step.transaction.error;
+  const error = errorMsg ? `error: ${errorMsg}` : null;
 
   return (
     <div className="container">
-      <div className="content">
-        <div className="title">Approve token so it can be deposited</div>
-
+      <div className="title">
+        <span className="main">Approve token so it can be deposited</span>
+      </div>
+      <div className="form">
         <TextInput
           label="NFT Address:"
           onChange={e => (store.address = e.target.value)}
           value={store.address}
         />
-
         <TextInput
           label="Token ID:"
           type="number"
           onChange={e => (store.tokenId = Number(e.target.value))}
           value={String(store.tokenId)}
         />
+        <div className="buttons">
+          <Button
+            onClick={Go(step)}
+            disabled={disabled}
+            loading={loading}
+            undertext={step.transaction.error}
+          >
+            Next
+          </Button>
+          <Button onClick={step.skip} disabled={loading}>
+            Skip
+          </Button>
+        </div>
       </div>
-      <div className="buttons">
-        <Button
-          onClick={Go(step)}
-          disabled={disabled}
-          loading={loading}
-          undertext={step.transaction.error}
-        >
-          Go
-        </Button>
-        <Button onClick={step.skip} disabled={loading}>
-          Skip
-        </Button>
-      </div>
+      <div className="error">{error ? <span>{error}</span> : null}</div>
+
       <style jsx>{`
+        .container {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+          height: 55vh;
+          color: white;
+        }
+
+        .form {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+          height: 40vh;
+          color: white;
+        }
+
         .title {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+        }
+        .title > .main {
           font-size: 3vh;
         }
+
         .buttons {
           display: flex;
           flex-direction: row;
         }
-        .content {
-          height: 45vh;
-          flex-direction: column;
-          justify-content: flex-start;
-          align-items: center;
-          display: flex;
-        }
-        .container {
-          display: flex;
-          height: 55vh;
-          flex-direction: column;
-          justify-content: space-between;
-          align-items: center;
-          color: white;
+
+        .error {
+          height: 50px;
         }
       `}</style>
     </div>

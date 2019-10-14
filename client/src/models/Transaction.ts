@@ -63,10 +63,11 @@ const Transaction = types
 
           resolve(hash);
         } catch (err) {
-          console.log("err", err);
+          console.error(err);
+
           self.update({
             status: "FAILURE",
-            error: err.toString()
+            error: err.message
           });
 
           resolve(undefined);

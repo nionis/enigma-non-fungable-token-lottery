@@ -93,9 +93,10 @@ const EnigmaTransaction = types
         return enigma.decryptTaskResult(result);
       } catch (err) {
         console.error(err);
+
         self.update({
           status: "FAILURE",
-          error: err.toString()
+          error: err.message
         });
       }
     })

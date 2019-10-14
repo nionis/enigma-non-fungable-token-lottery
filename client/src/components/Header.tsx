@@ -23,7 +23,11 @@ const Header = ({ path }: IHeaderProps) => {
       <MetaMask />
       <Link href={isHomepage ? `/create` : `/`} prefetch>
         <div className="svgIconContainer">
-          <SvgIcon clickable={true} icon={isHomepage ? "add" : "clear"} />
+          {isHomepage ? (
+            <p>Add Lottery</p>
+          ) : (
+            <SvgIcon clickable={true} icon={isHomepage ? "add" : "clear"} />
+          )}
         </div>
       </Link>
 
@@ -45,6 +49,8 @@ const Header = ({ path }: IHeaderProps) => {
           display: flex;
           justify-content: flex-end;
           width: 125px;
+          color: white;
+          cursor: pointer;
         }
       `}</style>
     </div>

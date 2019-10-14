@@ -12,7 +12,7 @@ interface IWhitelistAddresses {
 
 const store = types
   .model("WhitelistAddresses", {
-    error: false,
+    invalidInput: false,
     addresses: types.maybe(types.string)
   })
   .create();
@@ -23,7 +23,7 @@ const Go = (step: IWhitelistAddresses["step"]) => async () => {
   const addresses = store.addresses.split("\n");
   const transaction = step.transaction as Instance<typeof EnigmaTransaction>;
 
-  transaction.run(enigma, {
+  return transaction.run(enigma, {
     fn: "add_to_whitelist(address[], address)",
     args: [[addresses, "address[]"], [web3Store.account, "address"]],
     userAddr: web3Store.account,
@@ -37,73 +37,86 @@ const updateAddresses = e => {
   const addresses = value.split("\n");
   const isOk = addresses.every(address => web3.utils.isAddress(address));
 
-  store.error = !isOk;
+  store.invalidInput = !isOk;
   store.addresses = value;
 };
 
 const WhitelistAddresses = observer(({ step }: IWhitelistAddresses) => {
   const loading = step.transaction.status === "PENDING";
   const disabled =
-    !enigmaStore.isInstalled || loading || store.error || !store.addresses;
+    !enigmaStore.isInstalled ||
+    loading ||
+    store.invalidInput ||
+    !store.addresses;
+  const errorMsg = step.transaction.error;
+  const error = errorMsg ? `error: ${errorMsg}` : null;
 
   return (
     <div className="container">
-      <div className="content">
-        <div className="title">Add addresses to whitelist</div>
-        <div>(every new line in an address)</div>
+      <div className="title">
+        <span className="main">
+          Add addresses that can participate in the lotteries
+        </span>
+        <span className="secondary">
+          (secret contract owner only, one address per line, up to 100)
+        </span>
       </div>
       <div className="form">
         <textarea onChange={updateAddresses} value={store.addresses} />
         <div className="buttons">
-          <Button
-            onClick={Go(step)}
-            disabled={disabled}
-            loading={loading}
-            undertext={step.transaction.error}
-          >
-            Go
+          <Button onClick={Go(step)} disabled={disabled} loading={loading}>
+            Next
           </Button>
           <Button onClick={step.skip} disabled={loading}>
             Skip
           </Button>
         </div>
       </div>
+      <div className="error">{error ? <span>{error}</span> : null}</div>
 
       <style jsx>{`
-        .title {
-          font-size: 3vh;
-        }
-        .form {
-          display: flex;
-          height: 47vh;
-          flex-direction: column;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .buttons {
-          display: flex;
-          flex-direction: row;
-        }
         textarea {
           width: 70vh;
           height: 25vh;
           border-radius: 15px;
           margin-top: 2vh;
-          border: ${store.error ? "1px solid red" : "none"};
+          border: ${error ? "1px solid red" : "none"};
         }
-        .content {
-          flex-direction: column;
-          justify-content: flex-start;
-          align-items: center;
-          display: flex;
-        }
+
         .container {
           display: flex;
-          height: 55vh;
           flex-direction: column;
           justify-content: space-between;
           align-items: center;
+          height: 55vh;
           color: white;
+        }
+
+        .form {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          align-items: center;
+          height: 40vh;
+          color: white;
+        }
+
+        .title {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+        }
+        .title > .main {
+          font-size: 3vh;
+        }
+
+        .buttons {
+          display: flex;
+          flex-direction: row;
+        }
+
+        .error {
+          height: 50px;
         }
       `}</style>
     </div>

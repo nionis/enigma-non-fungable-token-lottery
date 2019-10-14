@@ -17,10 +17,11 @@ const Home = observer(() => {
   return (
     <div className="container">
       <div className="title">
-        <p>
+        {/* <p>
           Encrypted NFT lotteries using the{" "}
           <a href="https://enigma.co/">Enigma Protocol</a>
-        </p>
+        </p> */}
+        <p>Encrypted Non-Fungible Token (NFT) Lottery</p>
       </div>
       <div className="lotteries">
         {lotteries.length === 0 ? (

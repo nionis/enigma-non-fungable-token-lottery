@@ -13,20 +13,21 @@ const Go = (store: ILottery["store"]) => async () => {
   const enigma = enigmaStore.getEnigma();
 
   if (store.status === "JOIN") {
-    store.transaction.run(enigma, {
+    return store.transaction.run(enigma, {
       fn: "join_lottery(uint256, address)",
       args: [[store.token_id, "uint256"], [web3Store.account, "address"]],
       userAddr: web3Store.account,
       contractAddr: enigmaStore.enigmaContractAddress
     });
-  } else if (store.status === "FULL") {
-    store.transaction.run(enigma, {
-      fn: "roll(uint256)",
-      args: [[store.token_id, "uint256"]],
-      userAddr: web3Store.account,
-      contractAddr: enigmaStore.enigmaContractAddress
-    });
   }
+
+  // full
+  return store.transaction.run(enigma, {
+    fn: "roll(uint256)",
+    args: [[store.token_id, "uint256"]],
+    userAddr: web3Store.account,
+    contractAddr: enigmaStore.enigmaContractAddress
+  });
 };
 
 const Lottery = observer(({ store }: ILottery) => {
@@ -99,6 +100,7 @@ const Lottery = observer(({ store }: ILottery) => {
         }
         .bottom {
           display: flex;
+          flex-direction: column;
           justify-content: center;
           align-items: center;
         }
