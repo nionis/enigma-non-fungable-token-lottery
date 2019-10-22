@@ -28,7 +28,9 @@ const Home = observer(() => {
           <h1>no lotteries available</h1>
         ) : (
           lotteries.map(lottery => {
-            return <Lottery key={lottery.id} store={lottery} />;
+            return (
+              <Lottery key={lottery.id} store={lottery} homeStore={store} />
+            );
           })
         )}
       </div>

@@ -1,12 +1,14 @@
 import { observer } from "mobx-react";
 import { Instance } from "mobx-state-tree";
 import LotteryButton from "./LotteryButton";
+import HomeModel from "../models/Home";
 import LotteryModel from "../models/Lottery";
 import web3Store from "../stores/web3";
 import enigmaStore from "../stores/enigma";
 
 interface ILottery {
   store: Instance<typeof LotteryModel>;
+  homeStore: Instance<typeof HomeModel>;
 }
 
 const Go = (store: ILottery["store"]) => async () => {
@@ -15,7 +17,7 @@ const Go = (store: ILottery["store"]) => async () => {
   if (store.status === "JOIN") {
     return store.transaction.run(enigma, {
       fn: "join_lottery(uint256, address)",
-      args: [[store.token_id, "uint256"], [web3Store.account, "address"]],
+      args: [[store.id, "uint256"], [web3Store.account, "address"]],
       userAddr: web3Store.account,
       contractAddr: enigmaStore.enigmaContractAddress
     });
@@ -24,13 +26,13 @@ const Go = (store: ILottery["store"]) => async () => {
   // full
   return store.transaction.run(enigma, {
     fn: "roll(uint256)",
-    args: [[store.token_id, "uint256"]],
+    args: [[store.id, "uint256"]],
     userAddr: web3Store.account,
     contractAddr: enigmaStore.enigmaContractAddress
   });
 };
 
-const Lottery = observer(({ store }: ILottery) => {
+const Lottery = observer(({ store, homeStore }: ILottery) => {
   const loading = store.transaction.status === "PENDING";
   const disabled = !enigmaStore.isInstalled || loading;
 
@@ -49,7 +51,7 @@ const Lottery = observer(({ store }: ILottery) => {
             status={store.status}
             disabled={disabled}
             loading={loading}
-            onClick={Go(store)}
+            onClick={() => Go(store)().then(() => homeStore.getLotteries())}
             undertext={store.transaction.error}
           />
         </div>

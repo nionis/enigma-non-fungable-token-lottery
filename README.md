@@ -47,7 +47,7 @@ This project comes with a few handy scripts to help you create ERC721 contracts 
 5. `npm run dev`
 
 ## Pitfalls
-- After doing `discovery start` make sure you reset [metamask](https://ethereum.stackexchange.com/questions/44311/reset-metamask-nonce)
+- After doing `discovery start` make sure you [reset](https://ethereum.stackexchange.com/questions/44311/reset-metamask-nonce) all metamask accounts.
 - Cannot run discovery because docker.sock doesn't exist in windows OS.
 - When using WSL, docker-compose mount paths don't work.
 - Sometimes running tests fail: "incorrect epoch", fixed by delaying each test for 1 second.
